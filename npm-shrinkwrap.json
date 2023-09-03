@@ -1,13 +1,13 @@
 {
-    "name": "asset-transfer-basic",
+    "name": "lottery-hyperledger-contract",
     "version": "1.0.0",
     "lockfileVersion": 2,
     "requires": true,
     "packages": {
         "": {
-            "name": "asset-transfer-basic",
+            "name": "lottery-hyperledger-contract",
             "version": "1.0.0",
-            "license": "Apache-2.0",
+            "license": "MIT",
             "dependencies": {
                 "fabric-contract-api": "^2.4.0",
                 "fabric-shim": "^2.4.0",

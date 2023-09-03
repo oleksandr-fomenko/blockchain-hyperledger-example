@@ -1,13 +1,13 @@
-import {Context, Contract, Info, Returns, Transaction} from 'fabric-contract-api';
+import { Context, Contract, Info, Transaction } from 'fabric-contract-api';
 import stringify from 'json-stringify-deterministic';
 import sortKeysRecursive from 'sort-keys-recursive';
-import {Participant} from './participant';
-import {Winner} from './winner';
-import {Lottery} from './lottery';
-import {MetaResponse} from './metaResponse';
+import { Participant } from './participant';
+import { Winner } from './winner';
+import { Lottery } from './lottery';
+import { MetaResponse } from './metaResponse';
 
 
-@Info({title: 'LotteryContract', description: 'Smart contract for lottery'})
+@Info({ title: 'LotteryContract', description: 'Lottery smart contract' })
 export class LotteryContract extends Contract {
 
     @Transaction()
@@ -32,13 +32,12 @@ export class LotteryContract extends Contract {
                 }
             ],
             Winners: [],
-          }
-
-          await this.SaveLotteryContext(ctx, lottery);
+        }
+        await this.SaveLotteryContext(ctx, lottery);
     }
 
     @Transaction()
-    public async Participate(ctx: Context, id:string, name:string, lot:number): Promise<string> {
+    public async Participate(ctx: Context, id: string, name: string, lot: number): Promise<string> {
         const isParticipantExist = await this.IsParticipantExist(ctx, id);
         if (isParticipantExist) {
             throw new Error(`The participant with ${id} already participating in the lottery!`);
@@ -70,13 +69,13 @@ export class LotteryContract extends Contract {
     public async PickTheWinner(ctx: Context): Promise<string> {
         const lottery = await this.GetOrCreateDefaultLottery(ctx);
         const participants = lottery.Participants;
-        if(participants.length < 3){
+        if (participants.length < 3) {
             throw new Error(`A minimum of 3 users is required to participate in the lottery!`);
         }
 
         const randomIndex = await this.GetRandomInt(participants.length);
         const participantWinner = participants[randomIndex];
-        
+
         let prize = await this.GetPrize(participants);
 
         const winner: Winner = {
@@ -85,10 +84,10 @@ export class LotteryContract extends Contract {
             Prize: prize,
             WinDate: new Date
         };
-        
+
         lottery.Winners.push(winner);
         lottery.Participants = [];
-        
+
         await this.SaveLotteryContext(ctx, lottery);
 
         const returnData: MetaResponse = {
@@ -124,24 +123,24 @@ export class LotteryContract extends Contract {
                 Id: key,
                 Participants: [],
                 Winners: [],
-              };
+            };
         }
         return await this.UnWrap(lotteryBuffer);
     }
 
-    private async GetLotteryKey(ctx: Context): Promise<string>{
+    private async GetLotteryKey(ctx: Context): Promise<string> {
         return ctx.clientIdentity.getID();
     }
 
-    private async Wrap(value: Object): Promise<Buffer>{
+    private async Wrap(value: Object): Promise<Buffer> {
         return Buffer.from(stringify(sortKeysRecursive(value)));
     }
 
-    private async UnWrap(buffer: Uint8Array): Promise<any>{
+    private async UnWrap(buffer: Uint8Array): Promise<any> {
         return JSON.parse(buffer.toString());
     }
 
-    private async SaveLotteryContext(ctx: Context, lottery: Lottery): Promise<void>{
+    private async SaveLotteryContext(ctx: Context, lottery: Lottery): Promise<void> {
         const key = await this.GetLotteryKey(ctx);
         await ctx.stub.putState(key, await this.Wrap(lottery));
     }
@@ -150,7 +149,7 @@ export class LotteryContract extends Contract {
         return Math.floor(Math.random() * max);
     }
 
-    private async GetPrize(participants: Participant[]): Promise<number>{
+    private async GetPrize(participants: Participant[]): Promise<number> {
         let prize = 0;
         for (const participant of participants) {
             prize += participant.Lot;
